@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SMS Consent & Opt‑In</title>
+  <meta name="description" content="Collect explicit, documented consent for SMS messaging."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0b0b10; --card:#12121a; --ink:#e7e7ee; --muted:#a1a1b2; --accent:#4f8cff; --ok:#39d98a; --err:#ff6b6b; }
+    * { box-sizing:border-box }
+    html, body { height:100% }
+    body { margin:0; background:radial-gradient(1200px 800px at 20% 20%, #131323 0%, #0b0b10 50%); color:var(--ink); font:16px/1.55 Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    .wrap { max-width:900px; margin:0 auto; padding:48px 20px 96px }
+    header { text-align:center; margin-bottom:28px }
+    h1 { font-size:28px; margin:0 0 8px; letter-spacing:.2px }
+    p.lede { color:var(--muted); margin:0; font-size:15px }
+
+    .card { background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); box-shadow:0 10px 30px rgba(0,0,0,.35); border-radius:20px; padding:24px; }
+
+    form { display:grid; gap:16px; grid-template-columns:1fr; }
+    label { font-weight:600; font-size:13px; letter-spacing:.2px }
+    input[type="text"], input[type="email"], input[type="tel"], textarea { width:100%; background:#0f0f17; border:1px solid rgba(255,255,255,.12); color:var(--ink); padding:12px 14px; border-radius:12px; outline:none; transition:.2s border-color; }
+    input:focus, textarea:focus { border-color:var(--accent) }
+    textarea { min-height:120px; resize:vertical }
+    .row { display:grid; gap:16px; grid-template-columns:1fr }
+    @media (min-width:720px){ .row{ grid-template-columns:1fr 1fr } }
+
+    .consent-box { background:#0f0f17; border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:16px; font-size:14px; color:var(--ink) }
+    .consent-box small { color:var(--muted) }
+
+    .checkbox { display:flex; gap:10px; align-items:flex-start; }
+    .checkbox input { margin-top:3px }
+
+    .actions { display:flex; gap:12px; align-items:center; flex-wrap:wrap }
+    button { appearance:none; background:var(--accent); color:white; border:0; padding:12px 18px; border-radius:12px; font-weight:600; cursor:pointer; transition:transform .05s ease, filter .2s ease }
+    button:hover { filter:brightness(1.05) }
+    button:active { transform:translateY(1px) }
+    button[disabled] { opacity:.6; cursor:not-allowed }
+
+    .note { color:var(--muted); font-size:13px }
+    .status { font-size:14px; font-weight:600 }
+    .status.ok { color:var(--ok) }
+    .status.err { color:var(--err) }
+    .muted { color:var(--muted) }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size:12px }
+
+    footer { margin-top:24px; text-align:center; color:var(--muted); font-size:12px }
+    a { color:#a7c4ff }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>SMS Consent & Opt‑In</h1>
+      <p class="lede">Provide consent to receive text messages. This page records a verifiable audit trail.</p>
+    </header>
+
+    <div class="card">
+      <form id="consentForm" novalidate>
+        <div class="row">
+          <div>
+            <label for="fullName">Full name</label>
+            <input id="fullName" name="fullName" type="text" placeholder="Jane Doe" required />
+          </div>
+          <div>
+            <label for="email">Email (optional)</label>
+            <input id="email" name="email" type="email" placeholder="jane@example.com" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="phone">Mobile number (E.164)</label>
+            <input id="phone" name="phone" type="tel" inputmode="tel" placeholder="+16035551234" required />
+            <div class="note">Format: +1XXXXXXXXXX (or your country code)</div>
+          </div>
+          <div>
+            <label for="signature">Type your name as signature</label>
+            <input id="signature" name="signature" type="text" placeholder="Jane Doe" required />
+          </div>
+        </div>
+
+        <div class="consent-box" id="consentCopy">
+          <strong>Disclosure</strong>
+          <p>
+            By entering your phone number and checking the box below, you agree to receive SMS messages from <span id="brandName">Your Company</span> at the number provided. Message frequency varies. Message & data rates may apply. Reply <strong>STOP</strong> to cancel, <strong>HELP</strong> for help. Consent is not a condition of purchase. See our <a href="#" target="_blank" rel="noopener">Terms</a> and <a href="#" target="_blank" rel="noopener">Privacy Policy</a>.
+          </p>
+          <small class="muted">This exact text is hashed and stored for proof of consent.</small>
+        </div>
+
+        <div class="checkbox">
+          <input id="agree" name="agree" type="checkbox" required />
+          <label for="agree">I agree to receive SMS messages as described above.</label>
+        </div>
+
+        <textarea id="notes" name="notes" placeholder="(Optional) Anything you'd like us to know…"></textarea>
+
+        <div class="actions">
+          <button id="submitBtn" type="submit">Agree & Submit</button>
+          <span id="status" class="status muted">Not submitted</span>
+        </div>
+
+        <div class="note">
+          Your IP address and precise submission time are recorded server‑side for compliance.
+        </div>
+
+        <details>
+          <summary class="muted">What we store (audit trail)</summary>
+          <ul class="muted">
+            <li>Name, phone, email (optional), and typed signature</li>
+            <li>Consent checkbox + timestamp + timezone</li>
+            <li>The exact disclosure text + its SHA‑256 hash</li>
+            <li>Referrer URL, user agent; IP captured on the server</li>
+          </ul>
+        </details>
+
+      </form>
+    </div>
+
+    <footer>
+      &copy; <span id="year"></span> <span id="footerBrand">Your Company</span>. All rights reserved.
+    </footer>
+  </div>
+
+  <script>
+    // ==== CONFIGURE THESE VALUES ====
+    const CONFIG = {
+      BRAND_NAME: 'Your Company',
+      // If using Supabase Edge Function (recommended), set your deployed function URL here
+      // e.g. https://<your-project-ref>.functions.supabase.co/collect-consent
+      EDGE_FUNCTION_URL: 'https://YOUR_EDGE_FUNCTION_URL/collect-consent',
+      // Optionally, set a static source tag
+      SOURCE_URL: (document.referrer || window.location.href)
+    };
+
+    // ==== UTILITIES ====
+    const $ = (sel) => document.querySelector(sel);
+
+    function setBranding(){
+      const brand = CONFIG.BRAND_NAME || 'Your Company';
+      document.title = brand + ' — SMS Consent';
+      $('#brandName').textContent = brand;
+      $('#footerBrand').textContent = brand;
+      $('#year').textContent = new Date().getFullYear();
+    }
+
+    function toE164(raw){
+      // Minimal client-side normalization; real validation should also run server-side
+      const digits = (raw || '').replace(/[^\d+]/g, '');
+      if(!digits.startsWith('+')) return null; // require explicit country code
+      return digits;
+    }
+
+    async function sha256Hex(text){
+      const enc = new TextEncoder().encode(text);
+      const buf = await crypto.subtle.digest('SHA-256', enc);
+      return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    }
+
+    function status(msg, ok){
+      const el = $('#status');
+      el.textContent = msg;
+      el.className = 'status ' + (ok === true ? 'ok' : ok === false ? 'err' : 'muted');
+    }
+
+    // ==== MAIN ====
+    setBranding();
+
+    $('#consentForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const btn = $('#submitBtn');
+      btn.disabled = true;
+      status('Validating…');
+
+      const fullName = $('#fullName').value.trim();
+      const email = $('#email').value.trim();
+      const phoneRaw = $('#phone').value.trim();
+      const signature = $('#signature').value.trim();
+      const agreed = $('#agree').checked;
+      const notes = $('#notes').value.trim();
+      const phone = toE164(phoneRaw);
+
+      if(!fullName || !signature || !agreed || !phone){
+        status('Please complete all required fields (and use +countrycode format for phone).', false);
+        btn.disabled = false;
+        return;
+      }
+      if (signature !== fullName) {
+        status('Signature must exactly match your name.', false);
+        btn.disabled = false;
+        return;
+      }
+
+      const consentCopyEl = $('#consentCopy');
+      const consentCopy = consentCopyEl.innerText.trim();
+      const consentHash = await sha256Hex(consentCopy);
+
+      const payload = {
+        full_name: fullName,
+        email: email || null,
+        phone_e164: phone,
+        signature: signature,
+        consented: true,
+        consent_copy: consentCopy,
+        consent_copy_hash: consentHash,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        user_agent: navigator.userAgent,
+        referrer: document.referrer || null,
+        source_url: CONFIG.SOURCE_URL,
+        notes: notes || null,
+        opt_in_method: 'webform'
+      };
+
+      try{
+        status('Submitting…');
+        const res = await fetch(CONFIG.EDGE_FUNCTION_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if(!res.ok){
+          const txt = await res.text();
+          throw new Error(txt || ('HTTP ' + res.status));
+        }
+
+        status('Consent recorded. Thank you! ✅', true);
+        btn.disabled = false;
+        $('#consentForm').reset();
+      } catch(err){
+        console.error(err);
+        status('Submission failed. Please try again or contact support.', false);
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
